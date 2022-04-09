@@ -33,8 +33,6 @@
 - (void)viewWillAppear:(BOOL)animated {
     
     [super viewWillAppear:animated];
-    //在视图将要出现的时候完成事件注册，
-    
     [_webView.configuration.userContentController addScriptMessageHandler:self name:@"sayHello"];
 }
  
@@ -112,7 +110,7 @@
     NSString * hello = [message.body objectForKey:@"body"];
     [self.helloLabel setText:hello];
     
-    
+    //调用h5的方法
     [self.webView evaluateJavaScript:@"ocToJs('123')" completionHandler:^(id _Nullable response, NSError * _Nullable error) {
         if (!error) { // 成功
            NSLog(@"%@123",response);
