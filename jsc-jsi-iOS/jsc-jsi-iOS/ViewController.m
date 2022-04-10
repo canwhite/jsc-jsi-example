@@ -94,10 +94,30 @@
     self.helloLabel = [[UILabel alloc]init];
     self.helloLabel.frame = CGRectMake(130,390, 180, 30);
     [self.view addSubview:self.helloLabel];
+
+    
+    //原生调用h5 btn
+    UIButton * btn = [[UIButton alloc]initWithFrame:CGRectMake(10, 430, self.view.bounds.size.width-20, 30)];
+    [self.view addSubview:btn];
+    [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
+    [btn setBackgroundColor:[UIColor blueColor]];
+    [btn setTitle:@"原生调用H5" forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(callHandle:) forControlEvents:UIControlEventTouchUpInside];
+    
+    
     
     
 }
 
+-(void)callHandle:(UIButton*)btn{
+    [self.webView evaluateJavaScript:@"ocToJs('123')" completionHandler:^(id _Nullable response, NSError * _Nullable error) {
+        if (!error) { // 成功
+           NSLog(@"%@123",response);
+        } else { // 失败
+            NSLog(@"%@",error.localizedDescription);
+        }
+    }];
+}
 
 
 
@@ -106,11 +126,25 @@
 //内部有原生调用H5方法
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
     NSLog(@"%@",message.body);
-    //body中就是接收的参数，
-    NSString * hello = [message.body objectForKey:@"body"];
-    [self.helloLabel setText:hello];
-    
-    //调用h5的方法
+    NSString * name = message.name;
+    if([name isEqual: @"sayHello"]){
+        //body中就是接收的参数，
+        NSString * hello = [message.body objectForKey:@"body"];
+        [self.helloLabel setText:hello];
+        
+        //这里做回调操作
+        [self.webView evaluateJavaScript:[NSString stringWithFormat:@"ocCallback('sayHello,hahahah')"] completionHandler:^(id _Nullable response, NSError * _Nullable error) {
+            if (!error) { // 成功
+               NSLog(@"%@123",response);
+            } else { // 失败
+                NSLog(@"%@",error.localizedDescription);
+            }
+        }];
+        
+    }
+
+    //调用h5的方法,把这个方法独立在按钮里,放在这里只是说明一种回调方法
+    /*
     [self.webView evaluateJavaScript:@"ocToJs('123')" completionHandler:^(id _Nullable response, NSError * _Nullable error) {
         if (!error) { // 成功
            NSLog(@"%@123",response);
@@ -118,6 +152,9 @@
             NSLog(@"%@",error.localizedDescription);
         }
     }];
+     */
+    
+    
     
 }
 

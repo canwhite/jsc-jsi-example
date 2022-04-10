@@ -17,24 +17,30 @@ export default (props) => {
     const state = useReactive({
         data:null,
         result:null,
+        cb:null //for ios
 
     })
 
-    //注册的oc调用h5
+    //注册的h5事件，提供给oc调用
     window.ocToJs = function(data){
         console.log("----data---",data);
-        state.data = data;
-        return 123; //这里是返回值
+        state.data = data;//传参显示
+        return 123; //原生调用H5的回调值，这个回调都比较好接收
     }
-    //注册的android调用h5
-    //实际上和上边的一样，这里只是想做一个区分
+    //注册的h5事件，提供给android调用
     window.AndroidToJs = function(data){
         console.log("----data---",data);
-        state.data = data;
-        return 123; //这里是返回值
+        state.data = data; //传参显示
+        return 123; //原生调用H5的回调值
     }
 
-    //h5掉用oc
+    //h5调用用原生
+    //针对ios回调的一种兼容方案，就是提供一个统一的回调方法
+    window.ocCallback = (data)=>{
+        //对字符串进行转换
+        state.result = data;
+    }
+
     const sayHello = ()=>{
         if(isAndroid){
             //PS: 这里H5调用android相对完整，既有参数又有回调
@@ -43,21 +49,20 @@ export default (props) => {
             console.log("---result---",result);
             state.result = result;
         }else{
-            //这里应该
-            window.webkit.messageHandlers.sayHello.postMessage({body: 'hello world!'});
+            //ios的回调使用上边的ocCallback方法
+             window.webkit.messageHandlers.sayHello.postMessage({body: 'hello world!'});
         }
     }
-
-
+    
     return (
         <div className={ styles.app }>
             <div>hello world</div>
             <h2>H5 界面：</h2>
             <Button style={{ margin: '10px 0 30px' }} type="primary" onClick={ sayHello }>调用原生sayHello</Button>
-            <p>{state.result}</p>
+            <p>H5调用原生的回调：{state.result}</p>
             <br />
             {/* 显示调用内容 */}
-            <p> <span>原生调用H5传进来的值:{state.data} </span> </p>
+            <p> <span>原生调用H5传参:{state.data} </span> </p>
 
 
 
